@@ -1,0 +1,648 @@
+html<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동방고등학교 실시간 출석부</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .status-connected {
+            background: #28a745;
+            box-shadow: 0 0 10px #28a745;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+        }
+
+        .tab-container {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            background: white;
+            border-bottom-color: #4a90e2;
+            color: #4a90e2;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            color: #343a40;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        select {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .attendance-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .attendance-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .attendance-card:hover {
+            border-color: #4a90e2;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .attendance-card h4 {
+            color: #343a40;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .attendance-list {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .attendance-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .attendance-list th {
+            background: #4a90e2;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .attendance-list td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .attendance-list tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-absent { background: #ffe6e6; color: #dc3545; }
+        .status-late { background: #fff3cd; color: #856404; }
+        .status-early { background: #d4edda; color: #155724; }
+        .status-absence { background: #e2e3e5; color: #383d41; }
+
+        .detail-badge {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+
+        .detail-approved { background: #d4edda; color: #155724; }
+        .detail-unapproved { background: #f8d7da; color: #721c24; }
+        .detail-sick { background: #cce5ff; color: #004085; }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .attendance-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .tab-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 동방고등학교</h1>
+            <p>실시간 출석부 관리 시스템 <span class="status-indicator" id="connectionStatus"></span></p>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-button active" onclick="openTab(event, 'input-tab')">📝 출결 입력</button>
+            <button class="tab-button" onclick="openTab(event, 'view-tab')">👀 출결 조회</button>
+        </div>
+
+        <!-- 출결 입력 탭 -->
+        <div id="input-tab" class="tab-content active">
+            <div class="form-section">
+                <h3>📅 기본 정보</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="inputDate">날짜</label>
+                        <input type="date" id="inputDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGrade">학년</label>
+                        <select id="inputGrade" required onchange="updateHomeRoomTeacher()">
+                            <option value="">선택하세요</option>
+                            <option value="1">1학년</option>
+                            <option value="2">2학년</option>
+                            <option value="3">3학년</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputClass">반</label>
+                        <select id="inputClass" required onchange="updateHomeRoomTeacher()">
+                            <option value="">선택하세요</option>
+                            <option value="1">1반</option>
+                            <option value="2">2반</option>
+                            <option value="3">3반</option>
+                            <option value="4">4반</option>
+                            <option value="5">5반</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputTeacher">담임교사</label>
+                        <input type="text" id="inputTeacher" placeholder="학년과 반을 선택하면 자동 입력됩니다" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📋 출결 상태</h3>
+                <div class="attendance-types">
+                    <div class="attendance-card">
+                        <h4>🚫 결석</h4>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="absent-approved" name="attendanceType" value="결석-인정">
+                                <label for="absent-approved">인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="absent-unapproved" name="attendanceType" value="결석-미인정">
+                                <label for="absent-unapproved">미인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="absent-sick" name="attendanceType" value="결석-질병">
+                                <label for="absent-sick">질병</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attendance-card">
+                        <h4>⏰ 지각</h4>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="late-approved" name="attendanceType" value="지각-인정">
+                                <label for="late-approved">인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="late-unapproved" name="attendanceType" value="지각-미인정">
+                                <label for="late-unapproved">미인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="late-sick" name="attendanceType" value="지각-질병">
+                                <label for="late-sick">질병</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attendance-card">
+                        <h4>🏃 조퇴</h4>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="early-approved" name="attendanceType" value="조퇴-인정">
+                                <label for="early-approved">인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="early-unapproved" name="attendanceType" value="조퇴-미인정">
+                                <label for="early-unapproved">미인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="early-sick" name="attendanceType" value="조퇴-질병">
+                                <label for="early-sick">질병</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attendance-card">
+                        <h4>📚 결과</h4>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="absence-approved" name="attendanceType" value="결과-인정">
+                                <label for="absence-approved">인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="absence-unapproved" name="attendanceType" value="결과-미인정">
+                                <label for="absence-unapproved">미인정</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="absence-sick" name="attendanceType" value="결과-질병">
+                                <label for="absence-sick">질병</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>👤 학생 정보</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="studentId">학번</label>
+                        <input type="text" id="studentId" placeholder="학번을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentName">학생 이름</label>
+                        <input type="text" id="studentName" placeholder="학생 이름을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentNote">비고</label>
+                        <input type="text" id="studentNote" placeholder="비고사항을 입력하세요 (선택사항)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-primary" onclick="submitAttendance()">✅ 입력 완료</button>
+                <button type="button" class="btn-secondary" onclick="clearForm()">🔄 초기화</button>
+            </div>
+        </div>
+
+        <!-- 출결 조회 탭 -->
+        <div id="view-tab" class="tab-content">
+            <div class="form-section">
+                <h3>🔍 조회 조건</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="viewDate">날짜</label>
+                        <input type="date" id="viewDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="viewGrade">학년</label>
+                        <select id="viewGrade">
+                            <option value="">전체</option>
+                            <option value="1">1학년</option>
+                            <option value="2">2학년</option>
+                            <option value="3">3학년</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="viewClass">반</label>
+                        <select id="viewClass">
+                            <option value="">전체</option>
+                            <option value="1">1반</option>
+                            <option value="2">2반</option>
+                            <option value="3">3반</option>
+                            <option value="4">4반</option>
+                            <option value="5">5반</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-primary" onclick="searchAttendance()">🔍 조회하기</button>
+                </div>
+            </div>
+
+            <div id="attendanceResults"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getDatabase, ref, push, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+        // Firebase 설정 (여기에 1단계에서 복사한 설정값을 넣으세요)
+        const firebaseConfig = {
+            // 여기에 Firebase 설정값을 넣으세요
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const attendanceRef = ref(database, 'attendance');
+
+        // 전역 변수로 Firebase 함수들을 사용할 수 있도록 설정
+        window.database = database;
+        window.attendanceRef = attendanceRef;
+        window.firebasePush = push;
+        window.firebaseRef = ref;
+        window.firebaseOnValue = onValue;
+        window.firebaseQuery = query;
+        window.firebaseOrderByChild = orderByChild;
+
+        // 연결 상태 확인
+        const connectionStatus = document.getElementById('connectionStatus');
+        connectionStatus.className = 'status-indicator status-connected';
+        
+        console.log('Firebase 연결 성공!');
+    </script>
+
+    <script>
+        // 담임교사 정보
+        const homeRoomTeachers = {
+            '1-1': '김영희', '1-2': '박철수', '1-3': '이순자', '1-4': '정민호', '1-5': '최유진',
+            '2-1': '강대성', '2-2': '윤미경', '2-3': '서동현', '2-4': '한지영', '2-5': '임태준',
+            '3-1': '조현수', '3-2': '신혜원', '3-3': '배성민', '3-4': '황소영', '3-5': '노준혁'
+        };
+
+        // 페이지 로드 시 오늘 날짜 설정
+        window.addEventListener('load', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = today;
+            document.getElementById('viewDate').value = today;
+            searchAttendance();
+        });
+
+        // 탭 전환
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            const tabbuttons = document.getElementsByClassName("tab-button");
+            
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            for (let i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // 담임교사 자동 입력
+        function updateHomeRoomTeacher() {
+            const grade = document.getElementById('inputGrade').value;
+            const classNum = document.getElementById('inputClass').value;
+            const teacherInput = document.getElementById('inputTeacher');
+            
+            if (grade && classNum) {
+                const key = `${grade}-${classNum}`;
+                const teacher = homeRoomTeachers[key];
+                teacherInput.value = teacher || '';
+            } else {
+                teacherInput.value = '';
+            }
+        }
+
+        // 출석 정보 제출
+        async function submitAttendance() {
+            const date = document.getElementById('inputDate').value;
+            const grade = document.getElementById('inputGrade').value;
+            const classNum = document.getElementById('inputClass').value;
+            const teacher = document.getElementById('inputTeacher').value;
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            const studentNote = document.getElementById('studentNote').value;
+
+            // 필수 입력 체크
+            if (!date || !grade || !classNum || !teacher || !studentId || !studentName) {
+                alert('모든 기본 정보를 입력해주세요.');
+                return;
+            }
+
+            // 출결 상태 확인
+            const selectedAttendance = document.querySelector('input[name="attendanceType"]:checked');
+            if (!selectedAttendance) {
+                alert('출결 상태를 선택해주세요.');
+                return;
+            }
+
+            // 데이터 저장
+            const attendanceRecord = {
+                date: date,
+                grade: grade,
+                class: classNum,
+                teacher: teacher,
+                studentId: studentId,
+                studentName: studentName,
+                studentNote: studentNote,
+                attendanceType: selectedAttendance.value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await window.firebasePush(window.attendanceRef, attendanceRecord);
+                alert(`${studentName} 학생의 출결 정보가 등록되었습니다.`);
+                clearForm();
+                searchAttendance(); // 자동으로 조회 업데이트
+            } catch (error) {
+                console.error('데이터 저장 실패:', error);
+                alert('데이터 저장에 실패했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 폼
