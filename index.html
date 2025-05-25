@@ -520,14 +520,17 @@
         // Firebase 설정 (여기에 1단계에서 복사한 설정값을 넣으세요)
         const firebaseConfig = {
             // 여기에 Firebase 설정값을 넣으세요
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app/",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+           // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBAcgyWXmU4uCfF0cXLM_kcih1nay4Uw20",
+  authDomain: "dbhs-roll-book.firebaseapp.com",
+  databaseURL: "https://dbhs-roll-book-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dbhs-roll-book",
+  storageBucket: "dbhs-roll-book.firebasestorage.app",
+  messagingSenderId: "428038181723",
+  appId: "1:428038181723:web:79a7f3b94f0edbbb70807e",
+  measurementId: "G-R4NBV454FN"
+};
 
         // Firebase 초기화
         const app = initializeApp(firebaseConfig);
