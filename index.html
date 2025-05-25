@@ -247,6 +247,36 @@
             transform: none;
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+        }
+
         .btn-secondary {
             background: #6c757d;
             color: white;
@@ -332,10 +362,117 @@
             border: 1px solid #b3d7ff;
         }
 
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
         .loading {
             text-align: center;
             padding: 20px;
             color: #6c757d;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .date-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-range-container input[type="date"] {
+            flex: 1;
+        }
+
+        .date-range-container span {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .search-type-toggle {
+            display: flex;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+
+        .search-type-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-type-btn.active {
+            background: #4a90e2;
+            color: white;
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .confirm-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .confirm-content h3 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .confirm-content p {
+            margin-bottom: 20px;
+            color: #6c757d;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         @media (max-width: 768px) {
@@ -519,11 +656,30 @@
         <div id="view-tab" class="tab-content">
             <div class="form-section">
                 <h3>🔍 조회 조건</h3>
+                
+                <!-- 조회 타입 토글 -->
+                <div class="search-type-toggle">
+                    <button type="button" class="search-type-btn active" onclick="toggleSearchType('single')">📅 단일 날짜</button>
+                    <button type="button" class="search-type-btn" onclick="toggleSearchType('range')">📊 기간별 조회</button>
+                </div>
+
                 <div class="form-grid">
-                    <div class="form-group">
+                    <!-- 단일 날짜 조회 -->
+                    <div id="singleDateSearch" class="form-group">
                         <label for="viewDate">날짜</label>
                         <input type="date" id="viewDate">
                     </div>
+                    
+                    <!-- 기간별 조회 -->
+                    <div id="rangeDateSearch" class="form-group" style="display: none;">
+                        <label>조회 기간</label>
+                        <div class="date-range-container">
+                            <input type="date" id="startDate" placeholder="시작일">
+                            <span>~</span>
+                            <input type="date" id="endDate" placeholder="종료일">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="viewGrade">학년</label>
                         <select id="viewGrade">
@@ -552,12 +708,35 @@
                 </div>
                 <div class="button-group">
                     <button type="button" class="btn-primary" onclick="searchAttendance()">🔍 조회하기</button>
+                    <button type="button" class="btn-danger" onclick="deleteAllData()" title="⚠️ 모든 출결 데이터 삭제">🗑️ 전체 삭제</button>
+                </div>
+                
+                <!-- 엑셀 내보내기 옵션 -->
+                <div class="export-options" id="exportOptions" style="display: none;">
+                    <button type="button" class="btn-success" onclick="exportToExcel()">📊 Excel로 저장</button>
+                    <button type="button" class="btn-info" onclick="exportToCSV()">📄 CSV로 저장</button>
                 </div>
             </div>
 
             <div id="attendanceResults"></div>
         </div>
     </div>
+
+    <!-- 삭제 확인 다이얼로그 -->
+    <div id="confirmDialog" class="confirm-dialog">
+        <div class="confirm-content">
+            <h3>⚠️ 삭제 확인</h3>
+            <p id="confirmMessage">정말로 이 항목을 삭제하시겠습니까?</p>
+            <div class="confirm-buttons">
+                <button class="btn-danger" onclick="confirmDelete()">🗑️ 삭제</button>
+                <button class="btn-secondary" onclick="cancelDelete()">❌ 취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
         // Firebase 설정 (여기에 실제 Firebase 설정값을 넣으세요)
@@ -588,23 +767,17 @@
         // Firebase 변수들
         let database = null;
         let attendanceRef = null;
+        let deleteTarget = null; // 삭제할 대상 저장
+        let currentSearchResults = []; // 현재 조회 결과 저장 (엑셀 저장용)
+        let currentSearchType = 'single'; // 현재 조회 타입
 
-        // Firebase 초기화
-        async function initializeFirebase() {
+        // Firebase 초기화 (호환 버전 사용)
+        function initializeFirebase() {
             try {
-                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js');
-                const { getDatabase, ref, push, onValue, query, orderByChild } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js');
-                
-                const app = initializeApp(firebaseConfig);
-                database = getDatabase(app);
-                attendanceRef = ref(database, 'attendance');
-                
-                // 전역 함수 설정
-                window.firebasePush = push;
-                window.firebaseRef = ref;
-                window.firebaseOnValue = onValue;
-                window.firebaseQuery = query;
-                window.firebaseOrderByChild = orderByChild;
+                // Firebase 초기화
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                attendanceRef = database.ref('attendance');
                 
                 // 연결 상태 표시
                 const connectionStatus = document.getElementById('connectionStatus');
@@ -630,6 +803,8 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('inputDate').value = today;
             document.getElementById('viewDate').value = today;
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
             
             // 오늘 날짜 주말 체크
             checkWeekend(document.getElementById('inputDate'));
@@ -637,6 +812,26 @@
             // Firebase 초기화
             initializeFirebase();
         });
+
+        // 조회 타입 전환
+        function toggleSearchType(type) {
+            currentSearchType = type;
+            const buttons = document.querySelectorAll('.search-type-btn');
+            const singleSearch = document.getElementById('singleDateSearch');
+            const rangeSearch = document.getElementById('rangeDateSearch');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (type === 'single') {
+                buttons[0].classList.add('active');
+                singleSearch.style.display = 'flex';
+                rangeSearch.style.display = 'none';
+            } else {
+                buttons[1].classList.add('active');
+                singleSearch.style.display = 'none';
+                rangeSearch.style.display = 'flex';
+            }
+        }
 
         // 주말 체크 및 날짜 표시 함수
         function checkWeekend(dateInput) {
@@ -761,16 +956,20 @@
 
                 if (database && attendanceRef) {
                     // Firebase에 저장
-                    await window.firebasePush(attendanceRef, attendanceRecord);
-                    alert(`${studentName} 학생의 출결 정보가 등록되었습니다.`);
+                    attendanceRef.push(attendanceRecord).then(() => {
+                        alert(`${studentName} 학생의 출결 정보가 등록되었습니다.`);
+                        clearForm();
+                        searchAttendance(); // 자동으로 조회 업데이트
+                    }).catch((error) => {
+                        console.error('데이터 저장 실패:', error);
+                        alert('데이터 저장에 실패했습니다. 다시 시도해주세요.');
+                    });
                 } else {
                     // 데모 모드
                     console.log('데모 모드 - 저장된 데이터:', attendanceRecord);
                     alert(`${studentName} 학생의 출결 정보가 등록되었습니다. (데모 모드)`);
+                    clearForm();
                 }
-                
-                clearForm();
-                searchAttendance(); // 자동으로 조회 업데이트
                 
             } catch (error) {
                 console.error('데이터 저장 실패:', error);
@@ -816,11 +1015,23 @@
             resultsDiv.innerHTML = '<div class="loading">📊 데이터를 불러오는 중...</div>';
 
             try {
-                const searchDate = document.getElementById('viewDate').value;
+                let searchDate, startDate, endDate;
                 const searchGrade = document.getElementById('viewGrade').value;
                 const searchClass = document.getElementById('viewClass').value;
 
-                window.firebaseOnValue(attendanceRef, (snapshot) => {
+                if (currentSearchType === 'single') {
+                    searchDate = document.getElementById('viewDate').value;
+                } else {
+                    startDate = document.getElementById('startDate').value;
+                    endDate = document.getElementById('endDate').value;
+                    
+                    if (startDate && endDate && startDate > endDate) {
+                        alert('시작일이 종료일보다 늦을 수 없습니다.');
+                        return;
+                    }
+                }
+
+                attendanceRef.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (!data) {
                         resultsDiv.innerHTML = `
@@ -831,12 +1042,27 @@
                         return;
                     }
 
-                    // 데이터를 배열로 변환하고 필터링
-                    let attendanceArray = Object.values(data);
+                    // 데이터를 배열로 변환하고 ID 포함
+                    let attendanceArray = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
 
                     // 날짜 필터
-                    if (searchDate) {
+                    if (currentSearchType === 'single' && searchDate) {
                         attendanceArray = attendanceArray.filter(record => record.date === searchDate);
+                    } else if (currentSearchType === 'range' && (startDate || endDate)) {
+                        attendanceArray = attendanceArray.filter(record => {
+                            const recordDate = record.date;
+                            if (startDate && endDate) {
+                                return recordDate >= startDate && recordDate <= endDate;
+                            } else if (startDate) {
+                                return recordDate >= startDate;
+                            } else if (endDate) {
+                                return recordDate <= endDate;
+                            }
+                            return true;
+                        });
                     }
 
                     // 학년 필터
@@ -868,6 +1094,10 @@
         // 출석 결과 표시
         function displayAttendanceResults(data) {
             const resultsDiv = document.getElementById('attendanceResults');
+            const exportOptions = document.getElementById('exportOptions');
+            
+            // 현재 검색 결과 저장 (엑셀 저장용)
+            currentSearchResults = data;
             
             if (data.length === 0) {
                 resultsDiv.innerHTML = `
@@ -875,8 +1105,12 @@
                         📋 조회 결과가 없습니다. 검색 조건을 확인해주세요.
                     </div>
                 `;
+                exportOptions.style.display = 'none';
                 return;
             }
+
+            // 엑셀 저장 버튼 표시
+            exportOptions.style.display = 'flex';
 
             const typeClasses = {
                 '결석': 'status-absent',
@@ -907,6 +1141,7 @@
                                 <th>비고</th>
                                 <th>출결상태</th>
                                 <th>등록시간</th>
+                                <th>관리</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -934,6 +1169,11 @@
                             </span>
                         </td>
                         <td>${new Date(record.timestamp || record.created).toLocaleString()}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteRecord('${record.id}', '${record.studentName}')">
+                                🗑️ 삭제
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -946,6 +1186,168 @@
 
             resultsDiv.innerHTML = html;
         }
+
+        // 개별 레코드 삭제
+        function deleteRecord(recordId, studentName) {
+            deleteTarget = { type: 'single', id: recordId, name: studentName };
+            document.getElementById('confirmMessage').textContent = `${studentName} 학생의 출결 정보를 삭제하시겠습니까?`;
+            document.getElementById('confirmDialog').style.display = 'flex';
+        }
+
+        // 전체 데이터 삭제
+        function deleteAllData() {
+            deleteTarget = { type: 'all' };
+            document.getElementById('confirmMessage').textContent = `⚠️ 모든 출결 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다!`;
+            document.getElementById('confirmDialog').style.display = 'flex';
+        }
+
+        // 삭제 확인
+        async function confirmDelete() {
+            if (!deleteTarget) return;
+
+            try {
+                if (deleteTarget.type === 'single') {
+                    // 개별 삭제
+                    const recordRef = attendanceRef.child(deleteTarget.id);
+                    await recordRef.remove();
+                    alert(`${deleteTarget.name} 학생의 출결 정보가 삭제되었습니다.`);
+                } else if (deleteTarget.type === 'all') {
+                    // 전체 삭제
+                    await attendanceRef.remove();
+                    alert('모든 출결 데이터가 삭제되었습니다.');
+                }
+                
+                // 다이얼로그 닫기 및 데이터 새로고침
+                cancelDelete();
+                searchAttendance();
+                
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                alert('삭제에 실패했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 삭제 취소
+        function cancelDelete() {
+            deleteTarget = null;
+            document.getElementById('confirmDialog').style.display = 'none';
+        }
+
+        // 다이얼로그 외부 클릭시 닫기
+        document.getElementById('confirmDialog').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cancelDelete();
+            }
+        });
+
+        // Excel 파일로 내보내기
+        function exportToExcel() {
+            if (currentSearchResults.length === 0) {
+                alert('내보낼 데이터가 없습니다.');
+                return;
+            }
+
+            // 워크시트 데이터 준비
+            const wsData = [
+                ['날짜', '학년', '반', '담임교사', '학번', '학생명', '비고', '출결상태', '세부구분', '등록시간'] // 헤더
+            ];
+
+            currentSearchResults.forEach(record => {
+                const [type, detail] = record.attendanceType.split('-');
+                wsData.push([
+                    record.date,
+                    record.grade + '학년',
+                    record.class + '반',
+                    record.teacher,
+                    record.studentId,
+                    record.studentName,
+                    record.studentNote || '',
+                    type,
+                    detail,
+                    new Date(record.timestamp || record.created).toLocaleString()
+                ]);
+            });
+
+            // 엑셀 파일 생성 및 다운로드
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '출석부');
+
+            // 파일명 생성
+            const today = new Date().toISOString().split('T')[0];
+            const fileName = `동방고등학교_출석부_${today}.xlsx`;
+
+            // 다운로드
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // CSV 파일로 내보내기
+        function exportToCSV() {
+            if (currentSearchResults.length === 0) {
+                alert('내보낼 데이터가 없습니다.');
+                return;
+            }
+
+            // CSV 데이터 생성
+            let csvContent = '\uFEFF'; // UTF-8 BOM for Korean characters
+            csvContent += '날짜,학년,반,담임교사,학번,학생명,비고,출결상태,세부구분,등록시간\n';
+
+            currentSearchResults.forEach(record => {
+                const [type, detail] = record.attendanceType.split('-');
+                const row = [
+                    record.date,
+                    record.grade + '학년',
+                    record.class + '반',
+                    record.teacher,
+                    record.studentId,
+                    record.studentName,
+                    record.studentNote || '',
+                    type,
+                    detail,
+                    new Date(record.timestamp || record.created).toLocaleString()
+                ].map(field => `"${field}"`).join(',');
+                
+                csvContent += row + '\n';
+            });
+
+            // 파일 다운로드
+            const today = new Date().toISOString().split('T')[0];
+            const fileName = `동방고등학교_출석부_${today}.csv`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+
+        // SheetJS 라이브러리 동적 로드
+        function loadSheetJS() {
+            return new Promise((resolve, reject) => {
+                if (window.XLSX) {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Excel 내보내기 전에 라이브러리 로드
+        const originalExportToExcel = exportToExcel;
+        exportToExcel = async function() {
+            try {
+                await loadSheetJS();
+                originalExportToExcel();
+            } catch (error) {
+                console.error('Excel 라이브러리 로드 실패:', error);
+                alert('Excel 파일 생성에 실패했습니다. CSV 파일을 이용해주세요.');
+            }
+        };
     </script>
 </body>
 </html>
